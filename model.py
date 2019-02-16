@@ -122,4 +122,4 @@ if __name__ == '__main__':
     self_driving_model = SelfDrivingModel(data_processor)
     print(self_driving_model.get_model().summary())
     self_driving_model.train()
-    self_driving_model.save()
+    self_driving_model.save_model()
