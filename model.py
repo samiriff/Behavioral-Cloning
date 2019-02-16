@@ -111,7 +111,7 @@ class SelfDrivingModel:
         self.model.fit_generator(self.data_processor.get_train_generator(),
                                  steps_per_epoch=self.data_processor.get_training_steps_per_epoch(),
                                  validation_data=self.data_processor.get_validation_generator(),
-                                 validation_steps=self.data_processor.get_validation_steps,
+                                 validation_steps=self.data_processor.get_validation_steps(),
                                  epochs=5, verbose=1)
 
     def save_model(self):
@@ -122,3 +122,4 @@ if __name__ == '__main__':
     self_driving_model = SelfDrivingModel(data_processor)
     print(self_driving_model.get_model().summary())
     self_driving_model.train()
+    self_driving_model.save()
