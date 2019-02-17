@@ -1,3 +1,4 @@
+import argparse
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -10,7 +11,7 @@ from keras.layers.convolutional import Conv2D, Cropping2D
 from keras.layers.pooling import MaxPooling2D
 from keras import optimizers
 from keras import backend as K
-import sys
+from keras.models import load_model
 
 class DataProcessor:
     def __init__(self, data_root):
@@ -77,11 +78,17 @@ class DataProcessor:
 
 
 class SelfDrivingModel:
-    def __init__(self, data_processor):
+    def __init__(self, data_processor, output_model_path='./model.h5', learning_rate=0.001, epochs=5, input_model_path=None):
         self.data_processor = data_processor
-        self.learning_rate = 0.001
-        self.model = Sequential()
-        self.build()
+        self.output_model_path = output_model_path
+        self.learning_rate = learning_rate
+        self.epochs = 5
+        self.input_model_path = input_model_path
+        if input_model_path is None:
+            self.model = Sequential()
+            self.build()
+        else:
+            self.model = self.restore_model()
 
     def build(self):
         self.model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=self.data_processor.get_input_shape()))
@@ -116,14 +123,43 @@ class SelfDrivingModel:
                                  steps_per_epoch=self.data_processor.get_training_steps_per_epoch(),
                                  validation_data=self.data_processor.get_validation_generator(),
                                  validation_steps=self.data_processor.get_validation_steps(),
-                                 epochs=5, verbose=1)
+                                 epochs=self.epochs, verbose=1)
 
     def save_model(self):
-        self.model.save('./model.h5')
+        self.model.save(self.output_model_path)
+
+    def restore_model(self):
+        return load_model(self.input_model_path)
 
 if __name__ == '__main__':
-    data_processor = DataProcessor(sys.argv[1] + '/')
-    self_driving_model = SelfDrivingModel(data_processor)
+    parser = argparse.ArgumentParser(description='Model Trainer')
+    parser.add_argument(
+        'data_root',
+        type=str,
+        help='Path to data.'
+    )
+    parser.add_argument(
+        'transfer_learning_param',
+        type=str,
+        nargs='?',
+        default='',
+        help='Path of input model and output model for transfer learning'
+    )
+    args = parser.parse_args()
+
+    data_processor = DataProcessor(args.data_root + '/')
+
+    self_driving_model = None
+    if args.transfer_learning_param == '':
+        print("Performing training from scratch")
+        self_driving_model = SelfDrivingModel(data_processor)
+    else:
+        print("Using pre-trained model")
+        input_model_path, output_model_path= args.transfer_learning_param.split(',')
+        self_driving_model = SelfDrivingModel(data_processor, learning_rate=0.0001,
+                                              input_model_path='./model.h5',
+                                              output_model_path=output_model_path)
+
     print(self_driving_model.get_model().summary())
     self_driving_model.train()
     self_driving_model.save_model()
