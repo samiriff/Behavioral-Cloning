@@ -8,12 +8,14 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Activation, Flatten, Dropout, Lambda
 from keras.layers.convolutional import Conv2D, Cropping2D
 from keras.layers.pooling import MaxPooling2D
+from keras import optimizers
+from keras.backend import tf as ktf
 import sys
 
 class DataProcessor:
     def __init__(self, data_root):
         self.data_root = data_root
-        self.batch_size = 32
+        self.batch_size = 128
         self.driving_log = pd.read_csv(data_root + 'driving_log.csv')
         self.train_samples, self.validation_samples = self.init_samples()
         self.train_generator = self.generator(self.train_samples, self.batch_size)
@@ -77,25 +79,26 @@ class DataProcessor:
 class SelfDrivingModel:
     def __init__(self, data_processor):
         self.data_processor = data_processor
+        self.learning_rate = 0.001
         self.model = Sequential()
         self.build()
 
     def build(self):
         self.model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=self.data_processor.get_input_shape()))
+        self.model.add(Cropping2D(cropping=((50, 20), (0, 0))))
+        self.model.add(Lambda(lambda image: ktf.image.resize_images(image, (66, 200))))
         self.model.add(Conv2D(filters=24, kernel_size=(5, 5), strides=(2, 2), padding='same'))
-        self.model.add(MaxPooling2D())
+        # self.model.add(MaxPooling2D())
         self.model.add(Activation('relu'))
         self.model.add(Conv2D(filters=36, kernel_size=(5, 5), strides=(2, 2), padding='valid'))
         # self.model.add(MaxPooling2D())
         self.model.add(Activation('relu'))
-        self.model.add(Conv2D(filters=48, kernel_size=(5, 5), strides=(1, 1), padding='same'))
+        self.model.add(Conv2D(filters=48, kernel_size=(5, 5), strides=(1, 1), padding='valid'))
         self.model.add(MaxPooling2D())
         self.model.add(Activation('relu'))
         self.model.add(Conv2D(filters=64, kernel_size=(3, 3), strides=(1, 1), padding='valid'))
-        self.model.add(MaxPooling2D())
         self.model.add(Activation('relu'))
         self.model.add(Conv2D(filters=64, kernel_size=(3, 3), strides=(1, 1), padding='valid'))
-        # self.model.add(MaxPooling2D())
         self.model.add(Activation('relu'))
         self.model.add(Flatten())
         self.model.add(Dense(100))
@@ -107,7 +110,8 @@ class SelfDrivingModel:
         return self.model
 
     def train(self):
-        self.model.compile(loss='mse', optimizer='adam')
+        optimizer = optimizers.Adam(lr=self.learning_rate)
+        self.model.compile(loss='mse', optimizer=optimizer, metrics=['accuracy'])
         self.model.fit_generator(self.data_processor.get_train_generator(),
                                  steps_per_epoch=self.data_processor.get_training_steps_per_epoch(),
                                  validation_data=self.data_processor.get_validation_generator(),
