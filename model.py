@@ -14,9 +14,9 @@ from keras import backend as K
 from keras.models import load_model
 
 class DataProcessor:
-    def __init__(self, data_root):
+    def __init__(self, data_root, batch_size=128):
         self.data_root = data_root
-        self.batch_size = 128
+        self.batch_size = batch_size
         self.driving_log = pd.read_csv(data_root + 'driving_log.csv')
         self.train_samples, self.validation_samples = self.init_samples()
         self.train_generator = self.generator(self.train_samples, self.batch_size)
@@ -35,7 +35,7 @@ class DataProcessor:
 
         return train_test_split(self.samples, test_size=0.2)
 
-    def generator(self, samples, batch_size=32):
+    def generator(self, samples, batch_size):
         num_samples = len(samples)
         while 1:  # Loop forever so the generator never terminates
             shuffled_samples = sklearn.utils.shuffle(samples)
@@ -82,13 +82,14 @@ class SelfDrivingModel:
         self.data_processor = data_processor
         self.output_model_path = output_model_path
         self.learning_rate = learning_rate
-        self.epochs = 5
+        self.epochs = epochs
         self.input_model_path = input_model_path
         if input_model_path is None:
             self.model = Sequential()
             self.build()
         else:
             self.model = self.restore_model()
+            self.freeze_layers()
 
     def build(self):
         self.model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=self.data_processor.get_input_shape()))
@@ -131,6 +132,13 @@ class SelfDrivingModel:
     def restore_model(self):
         return load_model(self.input_model_path)
 
+    def freeze_layers(self):
+        print("Freezing layers for fine tuning")
+        for layer in self.model.layers[:-9]:
+            layer.trainable = False
+        for layer in self.model.layers[-9:]:
+            layer.trainable = True
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Model Trainer')
     parser.add_argument(
@@ -147,22 +155,26 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    data_processor = DataProcessor(args.data_root + '/')
+    batch_size = 128
+
+    data_processor = DataProcessor(args.data_root + '/', batch_size=batch_size)
 
     self_driving_model = None
     if args.transfer_learning_param == '':
         print("Performing training from scratch")
         self_driving_model = SelfDrivingModel(data_processor)
+    elif ',' not in args.transfer_learning_param:
+        print("Performing training from scratch and saving model to given path")
+        self_driving_model = SelfDrivingModel(data_processor, output_model_path=args.transfer_learning_param)
     else:
-        if ',' in args.transfer_learning_param:
-            print("Using pre-trained model")
-            input_model_path, output_model_path= args.transfer_learning_param.split(',')
-            self_driving_model = SelfDrivingModel(data_processor, learning_rate=0.0001,
-                                                  input_model_path='./model.h5',
-                                                  output_model_path=output_model_path)
-        else:
-            print("Saving model to given path")
-            self_driving_model = SelfDrivingModel(data_processor, output_model_path=args.transfer_learning_param)
+        print("Using pre-trained model")
+        epochs = 5
+        learning_rate = 0.001
+        input_model_path, output_model_path= args.transfer_learning_param.split(',')
+        self_driving_model = SelfDrivingModel(data_processor, learning_rate=learning_rate, epochs=epochs,
+                                              input_model_path='./model.h5',
+                                              output_model_path=output_model_path)
+
 
     print(self_driving_model.get_model().summary())
     self_driving_model.train()

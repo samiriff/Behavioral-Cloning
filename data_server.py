@@ -47,7 +47,7 @@ if __name__ == '__main__':
     data_provider.process_driving_log()
     data_provider.write_driving_log()
     data_provider.create_zip()
-    startNgrok()
+    #startNgrok()
 
 
 
