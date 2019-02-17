@@ -49,6 +49,12 @@ class DataProcessor:
                     name = self.data_root + batch_sample[0].strip()
                     center_image = mpimg.imread(name)
                     center_angle = float(batch_sample[1])
+
+                    is_flip_required = np.random.choice([True, False], p=[0.1, 0.9])
+                    if is_flip_required:
+                        center_image = np.fliplr(center_image)
+                        center_angle = -center_angle
+
                     images.append(center_image)
                     angles.append(center_angle)
 
@@ -98,19 +104,26 @@ class SelfDrivingModel:
         self.model.add(Conv2D(filters=24, kernel_size=(5, 5), strides=(2, 2), padding='same'))
         # self.model.add(MaxPooling2D())
         self.model.add(Activation('relu'))
+        self.model.add(Dropout(0.1))
         self.model.add(Conv2D(filters=36, kernel_size=(5, 5), strides=(2, 2), padding='valid'))
         # self.model.add(MaxPooling2D())
         self.model.add(Activation('relu'))
+        self.model.add(Dropout(0.1))
         self.model.add(Conv2D(filters=48, kernel_size=(5, 5), strides=(1, 1), padding='valid'))
         self.model.add(MaxPooling2D())
         self.model.add(Activation('relu'))
+        self.model.add(Dropout(0.1))
         self.model.add(Conv2D(filters=64, kernel_size=(3, 3), strides=(1, 1), padding='valid'))
         self.model.add(Activation('relu'))
+        self.model.add(Dropout(0.1))
         self.model.add(Conv2D(filters=64, kernel_size=(3, 3), strides=(1, 1), padding='valid'))
         self.model.add(Activation('relu'))
+        self.model.add(Dropout(0.1))
         self.model.add(Flatten())
         self.model.add(Dense(100))
+        self.model.add(Dropout(0.25))
         self.model.add(Dense(50))
+        self.model.add(Dropout(0.25))
         self.model.add(Dense(10))
         self.model.add(Dense(1))
 
