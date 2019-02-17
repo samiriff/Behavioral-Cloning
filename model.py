@@ -9,7 +9,7 @@ from keras.layers.core import Dense, Activation, Flatten, Dropout, Lambda
 from keras.layers.convolutional import Conv2D, Cropping2D
 from keras.layers.pooling import MaxPooling2D
 from keras import optimizers
-from keras.backend import tf as ktf
+from keras import backend as K
 import sys
 
 class DataProcessor:
@@ -86,7 +86,7 @@ class SelfDrivingModel:
     def build(self):
         self.model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=self.data_processor.get_input_shape()))
         self.model.add(Cropping2D(cropping=((50, 20), (0, 0))))
-        self.model.add(Lambda(lambda image: ktf.image.resize_images(image, (66, 200))))
+        self.model.add(Lambda(lambda image: K.tf.image.resize_images(image, (66, 200))))
         self.model.add(Conv2D(filters=24, kernel_size=(5, 5), strides=(2, 2), padding='same'))
         # self.model.add(MaxPooling2D())
         self.model.add(Activation('relu'))
