@@ -172,7 +172,7 @@ if __name__ == '__main__':
         learning_rate = 0.001
         input_model_path, output_model_path= args.transfer_learning_param.split(',')
         self_driving_model = SelfDrivingModel(data_processor, learning_rate=learning_rate, epochs=epochs,
-                                              input_model_path='./model.h5',
+                                              input_model_path=input_model_path,
                                               output_model_path=output_model_path)
 
 
