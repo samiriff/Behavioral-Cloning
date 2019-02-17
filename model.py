@@ -154,11 +154,15 @@ if __name__ == '__main__':
         print("Performing training from scratch")
         self_driving_model = SelfDrivingModel(data_processor)
     else:
-        print("Using pre-trained model")
-        input_model_path, output_model_path= args.transfer_learning_param.split(',')
-        self_driving_model = SelfDrivingModel(data_processor, learning_rate=0.0001,
-                                              input_model_path='./model.h5',
-                                              output_model_path=output_model_path)
+        if ',' in args.transfer_learning_param:
+            print("Using pre-trained model")
+            input_model_path, output_model_path= args.transfer_learning_param.split(',')
+            self_driving_model = SelfDrivingModel(data_processor, learning_rate=0.0001,
+                                                  input_model_path='./model.h5',
+                                                  output_model_path=output_model_path)
+        else:
+            print("Saving model to given path")
+            self_driving_model = SelfDrivingModel(data_processor, output_model_path=args.transfer_learning_param)
 
     print(self_driving_model.get_model().summary())
     self_driving_model.train()
