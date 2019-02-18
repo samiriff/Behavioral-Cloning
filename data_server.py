@@ -54,6 +54,7 @@ class DataProvider:
     def delete_image(self, filename):
         path = self.data_root + '/' + filename
         if os.path.exists(path):
+            print("Removing: ", path)
             os.remove(path)
             return True
         print('Not found: ', path)
@@ -67,11 +68,11 @@ class DataProvider:
         print("Creating ZIP")
         shutil.make_archive(self.data_root + '/' + 'data', 'zip', self.data_root)
 
-
+def startPythonServer():
+    os.system('start cmd /c python -m http.server 5005')
 
 def startNgrok():
     os.system('start cmd /c ngrok http 5005')
-
 
 if __name__ == '__main__':
     data_root = '../turn_correction_data'
@@ -83,6 +84,7 @@ if __name__ == '__main__':
         data_provider.write_driving_log()
         data_provider.create_zip()
         #startNgrok()
+        #startPythonServer()
     else:
         print("IMPORTANT: Please make a backup of this folder before running this program")
 
