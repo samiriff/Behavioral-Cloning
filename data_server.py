@@ -75,16 +75,16 @@ def startNgrok():
     os.system('start cmd /c ngrok http 5005')
 
 if __name__ == '__main__':
-    data_root = '../turn_correction_data'
-    prune_num_rows = 200
+    data_root = '../new_data'
+    prune_num_rows = 3800
     if os.path.exists(data_root + ' - Copy'):
         data_provider = DataProvider(data_root)
         data_provider.process_driving_log()
         data_provider.prune(prune_num_rows)
         data_provider.write_driving_log()
         data_provider.create_zip()
-        #startNgrok()
-        #startPythonServer()
+        startNgrok()
+        startPythonServer()
     else:
         print("IMPORTANT: Please make a backup of this folder before running this program")
 
