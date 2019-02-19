@@ -20,7 +20,7 @@ The goals / steps of this project are the following:
 [image6]: ./output_images/flipped.png "Flipped Image"
 [image7]: ./output_images/pruned_steering_distribution.png "Pruned Steering Distribution"
 [image8]: ./output_images/right_lane_driving.jpg "Right Lane Driving"
-[image9]: ./output_images/cameras.jpg "Cameras"
+[image9]: ./output_images/cameras.png "Cameras"
 
 ## Rubric Points
 ### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.
@@ -174,7 +174,7 @@ I also plotted the distribution of steering angles in the dataset, and found it 
 
 ![steering_distribution][image4]
 
-To fix this, I pruned the excess data with steering angles of 0 in the `DataCleaner.prune()` method. The plot after pruning is as shown below:
+To fix this, I pruned the excess data with steering angles of 0 in the `DataCleaner.prune()` method. The plot after pruning 11,400 out of 28,107 images is as shown below:
 
 ![pruned_steering_distribution][image7]
 
