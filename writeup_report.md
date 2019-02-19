@@ -54,6 +54,7 @@ The model.py file contains the code for training and saving the convolution neur
 My model is based on the Nvidia Convolutional neural network, as described in this [paper](https://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf).
 
 The model definition can be found in the `build()` method of the `SelfDrivingModel` class in `model.py`, and is as shown in the table below:
+
 | Layer | Description | Number of Trainable Parameters |
 |--|--|--|
 | Input | `160x320x3` RGB Image | 0 |
@@ -103,7 +104,7 @@ The model was trained and validated on different data sets to ensure that the mo
 
 #### 3. Model parameter tuning
 
-The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25).
+The model used an adam optimizer with a default learning rate of 0.001, so the learning rate was not tuned manually (model.py line 25).
 
 #### 4. Appropriate training data
 
