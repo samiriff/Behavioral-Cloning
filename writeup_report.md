@@ -14,12 +14,12 @@ The goals / steps of this project are the following:
 [//]: # (Image References)
 
 [image1]: ./examples/placeholder.png "Model Visualization"
-[image2]: ./examples/placeholder.png "Grayscaling"
-[image3]: ./examples/placeholder_small.png "Recovery Image"
-[image4]: ./examples/placeholder_small.png "Recovery Image"
-[image5]: ./examples/placeholder_small.png "Recovery Image"
-[image6]: ./examples/placeholder_small.png "Normal Image"
-[image7]: ./examples/placeholder_small.png "Flipped Image"
+[image2]: ./output_images/center_lane_driving.jpg "Center Lane Driving"
+[image3]: ./output_images/training_loss.png "Training Loss"
+[image6]: ./output_images/flipped.png "Flipped Image"
+[image7]: ./output_images/pruned_steering_distribution.png "Pruned Steering Distribution"
+[image8]: ./output_images/right_lane_driving.jpg "Right Lane Driving"
+[image9]: ./output_images/cameras.jpg "Cameras"
 
 ## Rubric Points
 ### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.
@@ -42,6 +42,20 @@ Using the Udacity provided simulator and my drive.py file, the car can be driven
 ```sh
 python drive.py model.h5
 ```
+Data preparation after recording with the simulator can be performed using:
+```sh
+python data_cleaner.py
+```
+Data extraction after uploading to the Udacity workspace can be performed with:
+```sh
+python data_extractor.py <PATH_TO_DATA_FOLDER>/data.zip <PATH_TO_NEW_DATA_FOLDER>
+```
+To train the model, one of the following 3 commands can be used:
+```
+python model.py <PATH_TO_NEW_DATA_FOLDER> # Trains a model using the given data and saves it as model.h5
+python model.py <PATH_TO_NEW_DATA_FOLDER> <NEW_MODEL_NAME> # Trains a model using the given data and saves it as <NEW_MODEL_NAME>
+python model.py <PATH_TO_NEW_DATA_FOLDER> <PRE_TRAINED_MODEL_NAME>,<NEW_MODEL_NAME> # Trains a pre-trained model using the given data and saves it as <NEW_MODEL_NAME>. (Transfer learning)
+```
 
 #### 3. Submission code is usable and readable
 
@@ -53,16 +67,9 @@ The model.py file contains the code for training and saving the convolution neur
 
 The model definition can be found in the `build()` method of the `SelfDrivingModel` class in `model.py`, and is as shown in the table below:
 
-
 My model consists of 252,219 trainable parameters,
 
 To introduce nonlinearity, the model includes RELU layers after every Convolutional Layer.
-
-The following layers were added to the beginning of the model to pre-process data within the model itself :
-
- 1. Lambda layer to normalize the data
- 2. Cropping2D layer to crop the data
- 3. Lambda layer to resize the data
 
 #### 2. Attempts to reduce overfitting in the model
 
@@ -94,7 +101,13 @@ To combat the overfitting, I modified the model to include dropout layers. I add
 
 However, this model performed miserably in track 2, since all my training data was from track 1. So, I collected 2 laps of training data from track 2, and used transfer learning to fine-tune the previously-trained model by freezing all but the last 9 layers during training, with a lower learning rate of 0.0001 over 20 epochs to minimize drastic changes in weights. However, the mean squared error seemed to be stagnating and didn't show much improvement. I also unfroze all the layers and trained this model with data from track 2. This led to some improvement in the autonomous mode of track 2 in the beginning, but it looked like the network had forgotten what it had learnt from track 1, and so, failed in track 1 as well.
 
-Then I decided not to try this variant of transfer learning. Instead, I combined the training data from both tracks into 1 dataset and trained a completely new model from scratch, over 5 epochs with a learning rate of 0.001. The training and validation losses both decreased relatively well with each epoch, indicating that the network was neither underfitting or overfitting.
+Then I decided not to try this variant of transfer learning. Instead, I combined the training data from both tracks into 1 dataset and trained a completely new model from scratch, over 5 epochs with a learning rate of 0.001. This led to better results. The training and validation losses both decreased relatively well with each epoch, indicating that the network was neither underfitting or overfitting.
+
+Initially, all the convolutional layers in my model had strides of 1 and I was reducing dimensionality by using Max Pooling layers. However, I found that increasing the number of strides of the first 2 convolutional layers to 2, and removing the Max Pooling layers after them, led to a decrease in training speed.
+
+The change in loss after each epoch is as shown below:
+
+![training_loss][image3]
 
 The final step was to run the simulator to see how well the car was driving around both tracks. The car got through the first track and most of the second track, without leaving the road.
 
@@ -138,28 +151,40 @@ Here is a visualization of the architecture (note: visualizing the architecture 
 
 #### 3. Creation of the Training Set & Training Process
 
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
+To capture good driving behavior, I first recorded two laps on both tracks using center lane driving on track 1 and right-lane driving on track 2.
 
-![alt text][image2]
+Here is an example image of center lane driving:
 
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
+![Center Lane Driving][image2]
 
-![alt text][image3]
-![alt text][image4]
-![alt text][image5]
+Here is an example image of right-lane driving:
 
-Then I repeated this process on track two in order to get more data points.
+![Right Lane Driving][image8]
 
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
+I made use of the images captured by the left and right cameras as well, adding or subtracting a correction of 0.2 degrees respectively, to teach my model how to steer if the car drifts off to the left or the right. The figure below depicts the same image as seen by the left, center and right cameras, along with the steering angles associated with each of them after applying the correction of 0.2 degrees:
 
-![alt text][image6]
-![alt text][image7]
+![cameras][image9]
 
-Etc ....
+To augment the data sat, I also flipped images thinking that this would make the network learn how to react to more new turns in the track, in case it drifts away. To save storage space, I performed the flipping operation using the `numpy.fliplr()` method in the generator function (`DataProcessor.generator()` method) itself, where, on average, 13 out of 128 images per batch were flipped. For example, here is an image that has then been flipped:
 
-After the collection process, I had X number of data points. I then preprocessed this data by ...
+![flipped][image6]
 
+I also plotted the distribution of steering angles in the dataset, and found it extremely skewed around 0, as shown in the histogram below:
 
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
+![steering_distribution][image8]
 
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+To fix this, I pruned the excess data with steering angles of 0 in the `DataCleaner.prune()` method. The plot after pruning is as shown below:
+
+![pruned_steering_distribution][image10]
+
+After the collection process, I had 16,707 number of data points. I then preprocessed this data in the model itself, by adding the following layers to the beginning of the model:
+
+ 1. Lambda layer to normalize the data
+ 2. Cropping2D layer to crop away 50 and 20 pixels from the top and bottom of the image respectively
+ 3. Lambda layer to resize the data to match the input size of `66x200`specified in the Nvidia model architecture diagram
+
+I finally randomly shuffled the data set and put 20% of the data into a validation set.
+
+Since the simulator in the workspace was too laggy, I ran the simulator on my local system to record training data, after which `data_cleaner.py` to clean up and create a zipped file (`data.zip`) of the required images. I used ngrok and a simple python server to upload this file to the Udacity workspace and used `data_extractor.py` to unzip this file so that `model.py` could process this data and train a model with the GPU enabled. After training, I downloaded the model and ran it with my simulator to record a video.
+
+I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was 5 as evidenced by the lack of decrease in the validation loss thereafter. I used an adam optimizer so that manually training the learning rate wasn't necessary.
