@@ -16,6 +16,7 @@ The goals / steps of this project are the following:
 [image1]: ./examples/placeholder.png "Model Visualization"
 [image2]: ./output_images/center_lane_driving.jpg "Center Lane Driving"
 [image3]: ./output_images/training_loss.png "Training Loss"
+[image4]: ./output_images/steering_distribution.png "Steering Distribution"
 [image6]: ./output_images/flipped.png "Flipped Image"
 [image7]: ./output_images/pruned_steering_distribution.png "Pruned Steering Distribution"
 [image8]: ./output_images/right_lane_driving.jpg "Right Lane Driving"
@@ -171,11 +172,11 @@ To augment the data sat, I also flipped images thinking that this would make the
 
 I also plotted the distribution of steering angles in the dataset, and found it extremely skewed around 0, as shown in the histogram below:
 
-![steering_distribution][image8]
+![steering_distribution][image4]
 
 To fix this, I pruned the excess data with steering angles of 0 in the `DataCleaner.prune()` method. The plot after pruning is as shown below:
 
-![pruned_steering_distribution][image10]
+![pruned_steering_distribution][image7]
 
 After the collection process, I had 16,707 number of data points. I then preprocessed this data in the model itself, by adding the following layers to the beginning of the model:
 
