@@ -4,7 +4,12 @@ import shutil
 import os
 import glob
 
-class DataProvider:
+class DataCleaner:
+    """
+    Cleans up the data recorded by the Simulator, and presents the data as a zip file that can be downloaded
+    by the Udacity workspace while creating a model
+    """
+
     def __init__(self, data_root):
         self.data_root = data_root
         self.rename_driving_log()
@@ -78,11 +83,11 @@ if __name__ == '__main__':
     data_root = '../new_data'
     prune_num_rows = 3800
     if os.path.exists(data_root + ' - Copy'):
-        data_provider = DataProvider(data_root)
-        data_provider.process_driving_log()
-        data_provider.prune(prune_num_rows)
-        data_provider.write_driving_log()
-        data_provider.create_zip()
+        data_cleaner = DataCleaner(data_root)
+        data_cleaner.process_driving_log()
+        data_cleaner.prune(prune_num_rows)
+        data_cleaner.write_driving_log()
+        data_cleaner.create_zip()
         startNgrok()
         startPythonServer()
     else:

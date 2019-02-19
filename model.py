@@ -13,7 +13,13 @@ from keras import optimizers
 from keras import backend as K
 from keras.models import load_model
 
+
 class DataProcessor:
+    '''
+    Takes care of creating batches of training and validation samples from the cleaned data provided by the DataExtractor,
+    using Python Generators
+    '''
+
     def __init__(self, data_root, batch_size=128):
         self.data_root = data_root
         self.batch_size = batch_size
@@ -82,8 +88,11 @@ class DataProcessor:
         return int(len(self.validation_samples) / self.batch_size)
 
 
-
 class SelfDrivingModel:
+    '''
+    Represents the actual model being trained using the batches of data provided by the DataProcessor
+    '''
+
     def __init__(self, data_processor, output_model_path='./model.h5', learning_rate=0.001, epochs=5, input_model_path=None):
         self.data_processor = data_processor
         self.output_model_path = output_model_path
