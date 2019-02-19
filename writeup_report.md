@@ -38,7 +38,7 @@ My project includes the following files:
 * writeup_report.md summarizing the results
 
 #### 2. Submission includes functional code
-Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
+Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing
 ```sh
 python drive.py model.h5
 ```
@@ -51,13 +51,53 @@ The model.py file contains the code for training and saving the convolution neur
 
 #### 1. An appropriate model architecture has been employed
 
-My model consists of a convolution neural network with 3x3 filter sizes and depths between 32 and 128 (model.py lines 18-24) 
+My model is based on the Nvidia Convolutional neural network, as described in this [paper](https://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf).
 
-The model includes RELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using a Keras lambda layer (code line 18). 
+The model definition can be found in the `build()` method of the `SelfDrivingModel` class in `model.py`, and is as shown in the table below:
+| Layer | Description | Number of Trainable Parameters |
+|--|--|--|
+| Input | `160x320x3` RGB Image | 0 |
+| Lambda | Normalizes the input image | 0 |
+| Cropping2D | Crops away 50 and 20 pixels from the top and bottom of the image respectively | 0 |
+| Lambda | Resizes the image to match the input size of `66x200`specified in the Nvidia model architecture diagram | 0 |
+| Convolution `5x5`| `2x2` stride, same padding, outputs `33x100x24`, bias `24x1` | 1824 |
+| RELU | | 0 |
+| Dropout | Probability of dropping = 0.1 for training set | 0 |
+| Convolution `5x5` | `2x2` stride, valid padding, outputs `15x48x36`, bias `36x1` | 21636 |
+| RELU | | 0 |
+| Dropout | Probability of dropping = 0.1 for training set | 0 |
+| Convolution `5x5` | `1x1` stride, valid padding, outputs `11x44x48`, bias `48x1`| 43248 |
+| Max pooling | `2x2` stride, valid padding, outputs `5x22x48` | 0 |
+| RELU | | 0 |
+| Dropout | Probability of dropping = 0.1 for training set | 0 |
+| Convolution `3x3`| `1x1` stride, valid padding, outputs `3x20x64`, bias `64x1`| 27712 |
+| RELU | | 0 |
+| Dropout | Probability of dropping = 0.1 for training set | 0 |
+| Convolution `3x3`| `1x1` stride, valid padding, outputs `1x18x64`, bias `64x1`| 36928 |
+| RELU | | 0 |
+| Dropout | Probability of dropping = 0.1 for training set | 0 |
+| Flatten | outputs `1152` | 0 |
+| Fully connected | outputs `100`, bias `100x1` | 115300 |
+| Dropout | Probability of dropping = 0.25 for training set | 0 |
+| Fully connected | outputs `50`, bias `50x1` | 5050 |
+| Dropout | Probability of dropping = 0.25 for training set | 0 |
+| Fully connected | outputs `10`, bias `10x1` | 510 |
+| Fully connected | outputs `1`, bias `1x1` | 11 |
+
+
+My model consists of 252,219 trainable parameters,
+
+To introduce nonlinearity, the model includes RELU layers after every Convolutional Layer.
+
+The following layers were added to the beginning of the model to pre-process data within the model itself :
+
+ 1. Lambda layer to normalize the data
+ 2. Cropping2D layer to crop the data
+ 3. Lambda layer to resize the data
 
 #### 2. Attempts to reduce overfitting in the model
 
-The model contains dropout layers in order to reduce overfitting (model.py lines 21). 
+The model contains dropout layers after every Convolutional and Fully connected layer (except for the last 2) in order to reduce overfitting.
 
 The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 10-16). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
 
