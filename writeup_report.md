@@ -39,6 +39,8 @@ My project includes the following files:
 * drive.py for driving the car in autonomous mode
 * model.h5 containing a trained convolution neural network
 * writeup_report.md summarizing the results
+* track1.mp4 - recording of the car driving autonomously on track 1 ([Online link](https://www.dropbox.com/s/d5zrdoi03245oqy/Track1.mp4?dl=0))
+* track2.mp4 - recording of the car driving autonomously on track 2 ([Online link](https://www.dropbox.com/s/hgtl8j34e19cdzz/Track2.mp4?dl=0))
 
 #### 2. Submission includes functional code
 Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing
@@ -63,6 +65,7 @@ To test the model with a test dataset, the following command can be run:
 ```sh
 python model_tester.py <PATH_TO_TEST_DATA_FOLDER> <TRAINED_MODEL_NAME>
 ```
+
 #### 3. Submission code is usable and readable
 
 The model.py file contains the code for training and saving the convolution neural network. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works.
