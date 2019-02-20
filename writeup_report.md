@@ -17,6 +17,7 @@ The goals / steps of this project are the following:
 [image2]: ./output_images/center_lane_driving.jpg "Center Lane Driving"
 [image3]: ./output_images/training_loss.png "Training Loss"
 [image4]: ./output_images/steering_distribution.png "Steering Distribution"
+[image5]: ./output_images/test_prediction.png "Test Prediction"
 [image6]: ./output_images/flipped.png "Flipped Image"
 [image7]: ./output_images/pruned_steering_distribution.png "Pruned Steering Distribution"
 [image8]: ./output_images/right_lane_driving.jpg "Right Lane Driving"
@@ -193,3 +194,7 @@ I finally randomly shuffled the data set and put 20% of the data into a validati
 Since the simulator in the workspace was too laggy, I ran the simulator on my local system to record training data, after which `data_cleaner.py` to clean up and create a zipped file (`data.zip`) of the required images. I used ngrok and a simple python server to upload this file to the Udacity workspace and used `data_extractor.py` to unzip this file so that `model.py` could process this data and train a model with the GPU enabled. After training, I downloaded the model and ran it with my simulator to record a video.
 
 I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was 5 as evidenced by the lack of decrease in the validation loss thereafter. I used an adam optimizer so that manually training the learning rate wasn't necessary.
+
+I also ran this trained model against a set of 8036 test images using `model_tester.py` and was able to evaluate the mean squared error loss, which turned out to be around 0.022. A sample prediction for a test image is shown below:
+
+![test_prediction][image5]
