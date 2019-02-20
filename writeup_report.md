@@ -13,7 +13,7 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/placeholder.png "Model Visualization"
+[image1]: ./output_images/nn.png "Neural Network Diagram"
 [image2]: ./output_images/center_lane_driving.jpg "Center Lane Driving"
 [image3]: ./output_images/training_loss.png "Training Loss"
 [image4]: ./output_images/steering_distribution.png "Steering Distribution"
@@ -34,6 +34,7 @@ My project includes the following files:
 * data_cleaner.py - for cleaning up the data recorded by the Simulator, and presents the data as a zip file that can be downloaded to the Udacity workspace from my laptop while create a model
 * data_extractor.py - used by the Udacity workspace to extract the contents of the zipped file provided by the DataCleaner
 * model.py - containing the script to generate batches of data from the file extracted by the DataExtractor, to create and train the model
+* model_tester.py - can be used to evaluate a trained model against a test dataset
 * drive.py for driving the car in autonomous mode
 * model.h5 containing a trained convolution neural network
 * writeup_report.md summarizing the results
@@ -57,7 +58,10 @@ python model.py <PATH_TO_NEW_DATA_FOLDER> # Trains a model using the given data 
 python model.py <PATH_TO_NEW_DATA_FOLDER> <NEW_MODEL_NAME> # Trains a model using the given data and saves it as <NEW_MODEL_NAME>
 python model.py <PATH_TO_NEW_DATA_FOLDER> <PRE_TRAINED_MODEL_NAME>,<NEW_MODEL_NAME> # Trains a pre-trained model using the given data and saves it as <NEW_MODEL_NAME>. (Transfer learning)
 ```
-
+To test the model with a test dataset, the following command can be run:
+```sh
+python model_tester.py <PATH_TO_TEST_DATA_FOLDER> <TRAINED_MODEL_NAME>
+```
 #### 3. Submission code is usable and readable
 
 The model.py file contains the code for training and saving the convolution neural network. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works.
@@ -146,9 +150,9 @@ The final model architecture consisted of a convolution neural network with the 
 | Fully connected | outputs `10`, bias `10x1` | 510 |
 | Fully connected | outputs `1`, bias `1x1` | 11 |
 
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
+Here is a visualization of the architecture (Note that the the layers only after normalization, cropping and resizing are shown, since the drawing tool couldn't render this deep network in a single image)
 
-![alt text][image1]
+![nn][image1]
 
 #### 3. Creation of the Training Set & Training Process
 
