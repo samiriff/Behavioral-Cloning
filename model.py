@@ -21,6 +21,12 @@ class DataProcessor:
     '''
 
     def __init__(self, data_root, batch_size=128):
+        '''
+        Constructor that reads the data root folder and creates training and validation generators
+        :param data_root: Root folder containing the driving log and a folder of recorded images from simulator
+        :param batch_size: Batch size to be used while generating samples
+        '''
+
         self.data_root = data_root
         self.batch_size = batch_size
         self.driving_log = pd.read_csv(data_root + 'driving_log.csv')
@@ -29,6 +35,12 @@ class DataProcessor:
         self.validation_generator = self.generator(self.validation_samples, self.batch_size)
 
     def init_samples(self):
+        '''
+        Adds the steering angles for images captured by the left and right cameras to the driving log,
+        and uses an 80%, 20% split of the dataset into training and validation sets
+        :return: Tuple with training and validation samples
+        '''
+
         correction = 0.2
         self.driving_log['steering_left'] = self.driving_log['steering'] + correction
         self.driving_log['steering_right'] = self.driving_log['steering'] - correction
@@ -42,6 +54,14 @@ class DataProcessor:
         return train_test_split(self.samples, test_size=0.2)
 
     def generator(self, samples, batch_size):
+        '''
+        Creates a Generator function that will be used by the model during training. This improves performance by loading
+        only images by a batch of the given batch size into memory
+        :param samples: List of samples
+        :param batch_size: The size of the sample list required at one time
+        :return: Shuffled tuple of sample features and labels
+        '''
+
         num_samples = len(samples)
         while 1:  # Loop forever so the generator never terminates
             shuffled_samples = sklearn.utils.shuffle(samples)
@@ -94,6 +114,16 @@ class SelfDrivingModel:
     '''
 
     def __init__(self, data_processor, output_model_path='./model.h5', learning_rate=0.001, epochs=5, input_model_path=None):
+        '''
+        Constructor that initializes the data processor, output model path, learning rate and number of epochs that will
+        be used to train the model and save it in the given output model path. Can also train a pre-trained model if specified
+        :param data_processor: Data Processor that will be used while training to load data in batches
+        :param output_model_path: Path where the trained model should be saved
+        :param learning_rate: Learning Rate during training
+        :param epochs: Number of epochs during training
+        :param input_model_path: If specified, transfer learning will be performed on model at this path, by freezing all except the last 9 layers
+        '''
+
         self.data_processor = data_processor
         self.output_model_path = output_model_path
         self.learning_rate = learning_rate
@@ -107,15 +137,16 @@ class SelfDrivingModel:
             self.freeze_layers()
 
     def build(self):
+        '''
+        Builds a model based on the nvidia paper
+        '''
         self.model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=self.data_processor.get_input_shape()))
         self.model.add(Cropping2D(cropping=((50, 20), (0, 0))))
         self.model.add(Lambda(lambda image: K.tf.image.resize_images(image, (66, 200))))
         self.model.add(Conv2D(filters=24, kernel_size=(5, 5), strides=(2, 2), padding='same'))
-        # self.model.add(MaxPooling2D())
         self.model.add(Activation('relu'))
         self.model.add(Dropout(0.1))
         self.model.add(Conv2D(filters=36, kernel_size=(5, 5), strides=(2, 2), padding='valid'))
-        # self.model.add(MaxPooling2D())
         self.model.add(Activation('relu'))
         self.model.add(Dropout(0.1))
         self.model.add(Conv2D(filters=48, kernel_size=(5, 5), strides=(1, 1), padding='valid'))
@@ -140,6 +171,9 @@ class SelfDrivingModel:
         return self.model
 
     def train(self):
+        '''
+        Trains the model using an adam optimizer with the appropriate generators
+        '''
         optimizer = optimizers.Adam(lr=self.learning_rate)
         self.model.compile(loss='mse', optimizer=optimizer, metrics=['accuracy'])
         self.model.fit_generator(self.data_processor.get_train_generator(),
@@ -149,12 +183,21 @@ class SelfDrivingModel:
                                  epochs=self.epochs, verbose=1)
 
     def save_model(self):
+        '''
+        Saves the trained model to disk
+        '''
         self.model.save(self.output_model_path)
 
     def restore_model(self):
+        '''
+        Loads a pre-trained model from disk
+        '''
         return load_model(self.input_model_path)
 
     def freeze_layers(self):
+        '''
+        Freezes all layers except the last 9
+        '''
         print("Freezing layers for fine tuning")
         for layer in self.model.layers[:-9]:
             layer.trainable = False
